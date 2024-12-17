@@ -1,0 +1,70 @@
+{
+  "name": "clangd-workspace-files-list",
+  "displayName": "ClangdWorkspaceFilesList",
+  "description": "Simple add files in workspace to workspaceSymbol requests",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],	
+  "keywords": [
+		"clang",
+		"clangd"
+  	],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "exclude": [
+  	"./vscode-clangd/**"
+  ],
+  "contributes": {
+    "configuration": {
+      "exclusionFilter":{
+        "type": "string",
+        "title": "Exclusion Filter",
+        "default": "**/*.{idx,bin,vcxproj,filters,sln,pch,exe,obj,lib,stamp,depend,ddi,ddi.d,modmap,dd}",
+        "description": "Filter workspace file request by exclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api"
+      },
+      "inclusionFilter":{
+        "type": "string",
+        "title": "Inclusion Filter",
+        "default": "",
+        "description": "Filter workspace file request by inclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api"
+      }
+		},
+    "commands": [
+      {
+        "command": "clangd-workspace-files-list.helloWorld",
+        "title": "Hello World"
+      }
+    ]
+  },
+  
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@clangd/vscode-clangd": "./vscode-clangd/api",
+	"vscode-languageclient": "8.0.2"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  },
+  "extensionDependencies": [
+	"llvm-vs-code-extensions.vscode-clangd"
+  ]
+}
