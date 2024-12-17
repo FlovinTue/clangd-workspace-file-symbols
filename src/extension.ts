@@ -2,6 +2,32 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+
+function paste_dump(){
+	if (apiInstance.client){
+		if (apiInstance.client.middleware){
+		  let existingFunctor = apiInstance.client.middleware.provideWorkspaceSymbols
+	
+		  apiInstance.client.middleware.provideWorkspaceSymbols = async (query, token, next) => {
+			let symbols = await existingFunctor?.(query, token, next);
+	
+			if (symbols){
+			  let files = await vscode.workspace.findFiles("",`**/*.{idx,bin,vcxproj,filters,sln}`);
+			  
+			  files.forEach( file =>{
+				let location =  new vscode.Location(file, new vscode.Range(0, 0, 0, 0));
+				let fileName = file.path.split("/").reverse()[0];
+				let symbolInfo = new vscode.SymbolInformation(fileName, vscodelc.SymbolKind.File, "", location);
+				symbols.push(symbolInfo);
+			  });
+			}
+	
+			return symbols;
+		  };
+		}
+	  }
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
