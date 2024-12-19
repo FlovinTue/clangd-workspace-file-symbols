@@ -32,8 +32,8 @@
     },
     "commands": [
       {
-        "command": "clangd-workspace-files-list.helloWorld",
-        "title": "Hello World"
+        "command": "test_inject",
+        "title": "Test Inject"
       }
     ]
   },
