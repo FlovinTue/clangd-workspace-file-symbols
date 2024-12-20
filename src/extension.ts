@@ -1,31 +1,55 @@
 import * as vscode from 'vscode';
 import * as vscodelc from 'vscode-languageclient';
-import type { ClangdExtension } from '@clangd/vscode-clangd';
+import type { ClangdApiV1, ClangdExtension } from '@clangd/vscode-clangd';
 
 declare type ProvideWorkspaceSymbolFn = (this: void, query: string, token: vscodelc.CancellationToken, next: vscodelc.ProvideWorkspaceSymbolsSignature) => vscode.ProviderResult<vscode.SymbolInformation[]>;
 
+const CheckForClangdDelayMs = 1500;
+const ClangdExtensionName = "llvm-vs-code-extensions.vscode-clangd";
+
 let CachedOverrideFn: ProvideWorkspaceSymbolFn | undefined;
 let ClangdTimedCheck: NodeJS.Timeout | undefined | null;
-const CheckDelayMs = 1000;
+let ClangApi: ClangdApiV1 | undefined | null;
 
 function populateTimedClangdCheck() {
 	if (ClangdTimedCheck) {
 		return;
 	}
 
-	console.log("Looking for clangd extension..");
+	console.log("Waiting for clangd extension..");
+
+	// Watch for clangd start...
+	ClangdTimedCheck = setInterval(async () => {
+		if (await try_wrap_workspace_symbol_middleware()) {
+			clearTimedClangdCheck();
+		}
+	}, CheckForClangdDelayMs);
 }
 
 function clearTimedClangdCheck() {
-	if (ClangdTimedCheck) {
-		clearInterval(ClangdTimedCheck);
+	if (!ClangdTimedCheck) {
+		return;
 	}
 
+	clearInterval(ClangdTimedCheck);
 	ClangdTimedCheck = null;
+
+	// Watch for server stop..
+	if (ClangApi?.languageClient) {
+		ClangApi.languageClient.onDidChangeState(({ newState }) => {
+			if (newState === vscodelc.State.Stopped) {
+				populateTimedClangdCheck();
+			}
+		});
+	}
 }
 
 async function get_files_as_symbols() {
-	const files = await vscode.workspace.findFiles("", `**/*.{idx,bin,vcxproj,filters,sln}`);
+	const config = vscode.workspace.getConfiguration("clangdWorkspaceFileSymbols");
+	const inclusionFilter = config.get<string>("inclusionFilter") ?? "";
+	const exclusionFilter = config.get<string>("exclusionFilter") ?? "";
+
+	const files = await vscode.workspace.findFiles(inclusionFilter, exclusionFilter);
 
 	let symbols = new Array<vscode.SymbolInformation>;
 
@@ -39,59 +63,52 @@ async function get_files_as_symbols() {
 	return symbols;
 }
 
-async function inject() {
-	const clangdExtension = vscode.extensions.getExtension<ClangdExtension>("llvm-vs-code-extensions.vscode-clangd");
+async function try_wrap_workspace_symbol_middleware(): Promise<boolean> {
+	const clangdExtension = vscode.extensions.getExtension<ClangdExtension>(ClangdExtensionName);
 
-	if (clangdExtension) {
-		let api = (await clangdExtension.activate()).getApi(1);
-
-		//clearTimedClangdCheck();
-
-		if (!api.languageClient) {
-			return;
-		}
-
-		let workspaceSymbolMiddleware = api.languageClient.middleware.provideWorkspaceSymbols;
-
-		if (workspaceSymbolMiddleware !== CachedOverrideFn || !CachedOverrideFn) {
-			const addFilesToWorkspaceSymbolMiddleware: ProvideWorkspaceSymbolFn = async (query, token, next) => {
-				let symbolPromise: vscode.ProviderResult<vscode.SymbolInformation[]> = workspaceSymbolMiddleware?.(query, token, next);
-
-				if (!workspaceSymbolMiddleware) {
-					symbolPromise = next(query, token);
-				}
-
-				const fileSymbols = await get_files_as_symbols();
-
-				let symbols = await symbolPromise;
-
-				return symbols?.concat(fileSymbols);
-			};
-
-			api.languageClient.middleware.provideWorkspaceSymbols = addFilesToWorkspaceSymbolMiddleware;
-			CachedOverrideFn = addFilesToWorkspaceSymbolMiddleware;
-
-			console.log("Wrapped clangd workspace symbol request middleware with file list injection");
-
-			// Watch for server stop..
-			api.languageClient.onDidChangeState(({ newState }) => {
-				if (newState === vscodelc.State.Stopped) {
-					//populateTimedClangdCheck();
-				}
-			});
-		}
+	if (!clangdExtension) {
+		return false;
 	}
+
+	ClangApi = (await clangdExtension.activate()).getApi(1);
+
+	if (!ClangApi.languageClient) {
+		return false;
+	}
+
+	let workspaceSymbolMiddleware = ClangApi.languageClient.middleware.provideWorkspaceSymbols;
+
+	if (workspaceSymbolMiddleware !== CachedOverrideFn || !CachedOverrideFn) {
+		const addFilesToWorkspaceSymbolMiddleware: ProvideWorkspaceSymbolFn = async (query, token, next) => {
+			let symbolPromise: vscode.ProviderResult<vscode.SymbolInformation[]> = workspaceSymbolMiddleware?.(query, token, next);
+
+			if (!workspaceSymbolMiddleware) {
+				symbolPromise = next(query, token);
+			}
+
+			const fileSymbols = await get_files_as_symbols();
+
+			let symbols = (await symbolPromise) ?? new Array<vscode.SymbolInformation>;
+
+			return symbols.concat(fileSymbols);
+		};
+
+		ClangApi.languageClient.middleware.provideWorkspaceSymbols = addFilesToWorkspaceSymbolMiddleware;
+		CachedOverrideFn = addFilesToWorkspaceSymbolMiddleware;
+
+		console.log("Wrapped clangd workspace symbol request middleware with file list injection");
+	}
+
+	return true;
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(vscode.commands.registerCommand("test_inject", () => {
-		inject();
-	}));
-
-	vscode.extensions.onDidChange(() => {
-		vscode.window.showInformationMessage('extensions changed!');
-	});
+	populateTimedClangdCheck();
 }
 
-export function deactivate() { }
+export function deactivate() {
+	if (ClangdTimedCheck) {
+		clearInterval(ClangdTimedCheck);
+	}
+}
 

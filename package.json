@@ -1,7 +1,7 @@
 {
-  "name": "clangd-workspace-files-list",
-  "displayName": "ClangdWorkspaceFilesList",
-  "description": "Simple add files in workspace to workspaceSymbol requests",
+  "name": "clangd-workspace-file-symbols",
+  "displayName": "Clangd Workspace File Symbols",
+  "description": "Upgrade your `Go To Symbols In Workspace` to fake the ReSharper/Jetbrains `Search Everywhere` feature!",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -11,31 +11,34 @@
   ],
   "keywords": [
     "clang",
-    "clangd"
+    "clangd",
+    "c++"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:c",
+    "onLanguage:cpp",
+    "onLanguage:cuda-cpp",
+    "onLanguage:objective-c",
+    "onLanguage:objective-cpp"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "exclusionFilter": {
-        "type": "string",
-        "title": "Exclusion Filter",
-        "default": "**/*.{idx,bin,vcxproj,filters,sln,pch,exe,obj,lib,stamp,depend,ddi,ddi.d,modmap,dd}",
-        "description": "Filter workspace file request by exclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api"
-      },
-      "inclusionFilter": {
-        "type": "string",
-        "title": "Inclusion Filter",
-        "default": "",
-        "description": "Filter workspace file request by inclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api"
+      "type": "object",
+      "title": "clangdWorkspaceFileSymbols",
+      "properties": {
+        "clangdWorkspaceFileSymbols.inclusionFilter": {
+          "type": "string",
+          "default": "",
+          "description": "Filter workspace file request by inclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
+        },
+        "clangdWorkspaceFileSymbols.exclusionFilter": {
+          "type": "string",
+          "default": "",
+          "description": "Filter workspace file request by exclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
+        }
       }
-    },
-    "commands": [
-      {
-        "command": "test_inject",
-        "title": "Test Inject"
-      }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
