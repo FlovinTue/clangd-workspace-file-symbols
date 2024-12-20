@@ -36,12 +36,12 @@
         "clangdWorkspaceFileSymbols.inclusionFilter": {
           "type": "string",
           "default": "",
-          "description": "Filter workspace file request by inclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
+          "description": "Filter workspace file request by inclusion pattern. Directly forwarded to findFiles. Ex. include C/C++ header and source files: `**/*.{h,hpp,c,cpp}'. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
         },
         "clangdWorkspaceFileSymbols.exclusionFilter": {
           "type": "string",
           "default": "",
-          "description": "Filter workspace file request by exclusion pattern. Directly forwarded to findFiles. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
+          "description": "Filter workspace file request by exclusion pattern. Directly forwarded to findFiles. Ex. exclude bin and lib files: `**/*.{bin,lib}'. See findFiles at https://code.visualstudio.com/api/references/vscode-api#workspace"
         }
       }
     }
