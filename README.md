@@ -4,12 +4,12 @@ Upgrade your `Go To Symbols In Workspace` to fake the ReSharper/Jetbrains `Searc
 
 ## Features
 
-This extension allows you to add your workspace files as symbols to the `Go To Symbols In Workspace` command results. This allows
+Allows you to add your workspace files as symbols to the `Go To Symbols In Workspace` command results. This makes
 for a more holistic search experience, resembling that of ReSharper's/Jetbrains `Search Everywhere`. 
 
 ## Requirements
 
-This extension requires the clangd extension to be installed and active to function
+Requires the clangd extension to be installed and active to function
 
 ## Extension Settings
 
