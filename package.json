@@ -2,7 +2,8 @@
   "name": "clangd-workspace-file-symbols",
   "displayName": "Clangd Workspace File Symbols",
   "description": "Upgrade your `Go To Symbols In Workspace` to fake the ReSharper/Jetbrains `Search Everywhere` feature!",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -21,6 +22,10 @@
     "onLanguage:objective-c",
     "onLanguage:objective-cpp"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlovinTue/clangd-workspace-file-symbols.git"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
