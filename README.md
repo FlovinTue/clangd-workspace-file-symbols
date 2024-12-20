@@ -1,11 +1,7 @@
 # Clangd Workspace File Symbols
 
-Upgrade your `Go To Symbols In Workspace` to fake the ReSharper/Jetbrains `Search Everywhere` feature!
-
-## Features
-
-Allows you to add your workspace files as symbols to the `Go To Symbols In Workspace` command results. This makes
-for a more holistic search experience, resembling that of ReSharper's/Jetbrains `Search Everywhere`. 
+A Visual Studio Code Extension that allows you to add your workspace files as symbols to the `Go To Symbols In Workspace` command results. 
+This makes for a more holistic search experience, resembling that of ReSharper's/Jetbrains `Search Everywhere`. 
 
 ## Requirements
 
